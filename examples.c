@@ -3,6 +3,20 @@
 
 #include "sumtype.h"
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#  include <stddef.h>
+#  define UNREACHABLE(x) (unreachable())
+#else
+#  ifdef __GNUC__
+#    define UNREACHABLE() (__builtin_unreachable())
+#  elseif defined(_MSC_VER)
+#    define UNREACHABLE() (__assume(false))
+#  else
+_Noreturn inline void unreachable_impl(void) {}
+#    define UNREACHABLE() (unreachable_impl())
+#  endif
+#endif
+
 struct Node
 {
   struct BinaryTree* l;
@@ -35,8 +49,8 @@ static int sum(struct BinaryTree* tree)
       return sum(node->l) + node->x + sum(node->r);
   }
 #endif
-  // Unreachable
-  return 0;
+
+  UNREACHABLE();
 }
 
 Sumtype(Haha, (char*, name), (uint16_t, id), (uint32_t, var))
