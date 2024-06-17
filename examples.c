@@ -6,15 +6,13 @@
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
 #  include <stddef.h>
 #  define UNREACHABLE(x) (unreachable())
+#elif defined(__GNUC__)
+#  define UNREACHABLE() (__builtin_unreachable())
+#elif defined(_MSC_VER)
+#  define UNREACHABLE() (__assume(false))
 #else
-#  ifdef __GNUC__
-#    define UNREACHABLE() (__builtin_unreachable())
-#  elseif defined(_MSC_VER)
-#    define UNREACHABLE() (__assume(false))
-#  else
 _Noreturn inline void unreachable_impl(void) {}
-#    define UNREACHABLE() (unreachable_impl())
-#  endif
+#  define UNREACHABLE() (unreachable_impl())
 #endif
 
 struct Node

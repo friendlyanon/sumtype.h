@@ -55,15 +55,13 @@
   ST_FOREACH(Sumtype_Field, Sumtype_F_Indirect, __VA_ARGS__, )
 #define Sumtype_F_Indirect() Sumtype_Fields
 
-#if defined(__GNUC__)
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#  define Sumtype_Constructor_Warn_Unused_Result [[nodiscard]]
+#elif defined(__GNUC__)
 #  define Sumtype_Constructor_Warn_Unused_Result \
     __attribute__((warn_unused_result))
 #else
-#  if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-#    define Sumtype_Constructor_Warn_Unused_Result [[nodiscard]]
-#  else
-#    define Sumtype_Constructor_Warn_Unused_Result
-#  endif
+#  define Sumtype_Constructor_Warn_Unused_Result
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
