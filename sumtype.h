@@ -117,7 +117,7 @@
   }; \
   Sumtype_Constructors(A, __VA_ARGS__)
 
-#define Sumtype(A, ...) ST_EVAL(Sumtype_Impl(A, __VA_ARGS__))
+#define Sumtype(A, ...) ST_EVAL(Sumtype_Impl(A, __VA_ARGS__, ))
 
 #define match(ty, expr) \
   for (ty* sumtype_priv_matched_val = (expr); \
