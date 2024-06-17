@@ -9,7 +9,7 @@
 #elif defined(__GNUC__)
 #  define UNREACHABLE() (__builtin_unreachable())
 #elif defined(_MSC_VER)
-#  define UNREACHABLE() (__assume(false))
+#  define UNREACHABLE() (__assume(0))
 #else
 _Noreturn inline void unreachable_impl(void) {}
 #  define UNREACHABLE() (unreachable_impl())
@@ -93,6 +93,13 @@ Sumtype(
 
 int main(void)
 {
+  {
+    struct BinaryTree l = BinaryTree_leaf(-2);
+    struct BinaryTree r = BinaryTree_leaf(-1);
+    struct BinaryTree tree = BinaryTree_node((struct Node) {&l, 3, &r});
+    printf("%d\n", sum(&tree));
+  }
+
   struct Haha something = Haha_name("hello");
 
 #ifdef Sumtype_typeinference

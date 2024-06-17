@@ -55,33 +55,50 @@
   ST_FOREACH(Sumtype_Field, Sumtype_F_Indirect, __VA_ARGS__, )
 #define Sumtype_F_Indirect() Sumtype_Fields
 
+#if defined(__GNUC__) || defined(__clang__)
+#  define Sumtype_GCC_or_Clang
+#endif
+
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
 #  define Sumtype_Constructor_Warn_Unused_Result [[nodiscard]]
-#elif defined(__GNUC__)
+#elif defined(Sumtype_GCC_or_Clang)
 #  define Sumtype_Constructor_Warn_Unused_Result \
-    __attribute__((warn_unused_result))
+    __attribute__((__warn_unused_result__))
 #else
 #  define Sumtype_Constructor_Warn_Unused_Result
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
-#  define Sumtype_Constructor_Const __attribute__((const))
+#ifdef Sumtype_GCC_or_Clang
+#  define Sumtype_Constructor_Const __attribute__((__const__))
 #else
 #  define Sumtype_Constructor_Const
 #endif
 
+#ifdef __clang__
+#  define Sumtype_Diag_Push _Pragma("clang diagnostic push")
+#  define Sumtype_Diag_Unused_Function \
+    _Pragma("clang diagnostic ignored \"-Wunused-function\"")
+#  define Sumtype_Diag_Pop _Pragma("clang diagnostic pop")
+#else
+#  define Sumtype_Diag_Push
+#  define Sumtype_Diag_Unused_Function
+#  define Sumtype_Diag_Pop
+#endif
+
 #define Sumtype_Constructor_Attributes \
-  Sumtype_Constructor_Warn_Unused_Result Sumtype_Constructor_Const
+  Sumtype_Diag_Unused_Function Sumtype_Constructor_Warn_Unused_Result \
+      Sumtype_Constructor_Const
 
 #define Sumtype_Constructor_Fields(ty, name) \
-  .tag = Sumtype_Tag(ty, name), .variant = {.name = name},
+  .tag = Sumtype_Tag(ty, name), .variant = {.name = name}
 #define Sumtype_Decl(ty, name) ty name
 #define Sumtype_Constructor(A, args) \
-  static inline Sumtype_Constructor_Attributes struct A ST_CAT( \
-      A, ST_CAT(_, ST_IF_0 args))(Sumtype_Decl args) \
+  Sumtype_Diag_Push Sumtype_Constructor_Attributes static inline struct A \
+  ST_CAT(A, ST_CAT(_, ST_IF_0 args))(Sumtype_Decl args) \
   { \
     return (struct A) {Sumtype_Constructor_Fields args}; \
-  }
+  } \
+  Sumtype_Diag_Pop
 #define Sumtype_Constructors(A, ...) \
   ST_FOREACH_TYPED(Sumtype_Constructor, Sumtype_C_Indirect, A, __VA_ARGS__, )
 #define Sumtype_C_Indirect() Sumtype_Constructors
@@ -114,14 +131,20 @@
     for (ty* name = &sumtype_priv_matched_val->variant.name; name != (ty*)0; \
          name = (ty*)0)
 
-#if defined(__GNUC__) \
-    || defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#  define Sumtype_typeof typeof
+#elif defined(Sumtype_GCC_or_Clang)
+#  define Sumtype_typeof __typeof__
+#endif
+
+#ifdef Sumtype_typeof
 #  define Sumtype_typeinference
-#  define match_t(expr) match(typeof(*expr), expr)
-#  define let_t(name) let(typeof(sumtype_priv_matched_val->variant.name), name)
+#  define match_t(expr) match(Sumtype_typeof(*expr), expr)
+#  define let_t(name) \
+    let(Sumtype_typeof(sumtype_priv_matched_val->variant.name), name)
 #  define iflet_t(name, expr) \
-    iflet(typeof(*expr), \
-          typeof(sumtype_priv_matched_val->variant.name), \
+    iflet(Sumtype_typeof(*expr), \
+          Sumtype_typeof(sumtype_priv_matched_val->variant.name), \
           name, \
           expr)
 #endif
