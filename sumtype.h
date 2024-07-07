@@ -117,7 +117,18 @@
   }; \
   Sumtype_Constructors(A, __VA_ARGS__)
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#  define Sumtype_typeof typeof
+#elif defined(Sumtype_GCC_or_Clang)
+#  define Sumtype_typeof __typeof__
+#endif
+
+// Public API:
+
 #define Sumtype(A, ...) ST_EVAL(Sumtype_Impl(A, __VA_ARGS__, ))
+
+#define SumtypeLit(A, name, ...) \
+  ((struct A) {.tag = Sumtype_Tag(, name), .variant = {.name = {__VA_ARGS__}}})
 
 #define match(ty, expr) \
   for (ty* sumtype_priv_matched_val = (expr); \
@@ -130,12 +141,6 @@
   case Sumtype_Tag(ty, name): \
     for (ty* name = &sumtype_priv_matched_val->variant.name; name != (ty*)0; \
          name = (ty*)0)
-
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-#  define Sumtype_typeof typeof
-#elif defined(Sumtype_GCC_or_Clang)
-#  define Sumtype_typeof __typeof__
-#endif
 
 #ifdef Sumtype_typeof
 #  define Sumtype_typeinference

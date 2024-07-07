@@ -49,7 +49,7 @@ int main(void)
   {
     struct BinaryTree l = BinaryTree_leaf(-2);
     struct BinaryTree r = BinaryTree_leaf(-1);
-    struct BinaryTree tree = BinaryTree_node((struct Node) {&l, 3, &r});
+    struct BinaryTree tree = SumtypeLit(BinaryTree, node, &l, 3, &r);
     printf("%d\n", sum(&tree));
   }
 
