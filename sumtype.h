@@ -128,7 +128,7 @@
 #define Sumtype(A, ...) ST_EVAL(Sumtype_Impl(A, __VA_ARGS__, ))
 
 #define SumtypeLit(A, name, ...) \
-  ((struct A) {.tag = Sumtype_Tag(, name), .variant = {.name = {__VA_ARGS__}}})
+  ((struct A) {.tag = Sumtype_Tag(, name), .variant = {.name = __VA_ARGS__}})
 
 #define match(ty, expr) \
   for (ty* sumtype_priv_matched_val = (expr); \

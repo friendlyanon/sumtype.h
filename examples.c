@@ -48,9 +48,8 @@ int main(void)
 {
   {
     struct BinaryTree l = BinaryTree_leaf(-2);
-    struct BinaryTree r = BinaryTree_leaf(-1);
-    struct BinaryTree tree = SumtypeLit(BinaryTree, node, &l, 3, &r);
-    printf("%d\n", sum(&tree));
+    struct BinaryTree r = SumtypeLit(BinaryTree, leaf, -1);
+    printf("%d\n", sum(&SumtypeLit(BinaryTree, node, {&l, 3, &r})));
   }
 
   struct Haha something = Haha_name("hello");
