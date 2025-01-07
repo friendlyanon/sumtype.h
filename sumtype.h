@@ -59,6 +59,16 @@
 #  define Sumtype_GCC_or_Clang
 #endif
 
+#ifdef Sumtype_GCC_or_Clang
+#  define Sumtype_always_inline \
+    extern __inline \
+        __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+#elif defined(_MSC_VER)
+#  define Sumtype_always_inline static __forceinline
+#else
+#  define Sumtype_always_inline static inline
+#endif
+
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
 #  define Sumtype_Constructor_Warn_Unused_Result [[nodiscard]]
 #elif defined(Sumtype_GCC_or_Clang)
@@ -87,14 +97,14 @@
 
 #define Sumtype_Constructor_Attributes \
   Sumtype_Diag_Unused_Function Sumtype_Constructor_Warn_Unused_Result \
-      Sumtype_Constructor_Const
+      Sumtype_Constructor_Const Sumtype_always_inline
 
 #define Sumtype_Constructor_Fields(ty, name) \
   .tag = Sumtype_Tag(ty, name), .variant = {.name = name}
 #define Sumtype_Decl(ty, name) ty name
 #define Sumtype_Constructor(A, args) \
-  Sumtype_Diag_Push Sumtype_Constructor_Attributes static inline struct A \
-  ST_CAT(A, ST_CAT(_, ST_IF_0 args))(Sumtype_Decl args) \
+  Sumtype_Diag_Push Sumtype_Constructor_Attributes struct A ST_CAT( \
+      A, ST_CAT(_, ST_IF_0 args))(Sumtype_Decl args) \
   { \
     return (struct A) {Sumtype_Constructor_Fields args}; \
   } \

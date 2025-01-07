@@ -2,8 +2,8 @@
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
 #  include <stddef.h>
-#  define UNREACHABLE(x) (unreachable())
-#elif defined(__GNUC__)
+#  define UNREACHABLE() (unreachable())
+#elif defined(__GNUC__) || defined(__clang__)
 #  define UNREACHABLE() (__builtin_unreachable())
 #elif defined(_MSC_VER)
 #  define UNREACHABLE() (__assume(0))
