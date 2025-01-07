@@ -14,21 +14,12 @@ _Noreturn inline void unreachable_impl(void) {}
 
 int sum(struct BinaryTree* tree)
 {
-#ifdef Sumtype_typeinference
-  match_t(tree) {
-    let_t(leaf)
+  match(*tree) {
+    let(leaf)
       return *leaf;
-    let_t(node)
+    let(node)
       return sum(node->l) + node->x + sum(node->r);
   }
-#else
-  match(struct BinaryTree, tree) {
-    let(int, leaf)
-      return *leaf;
-    let(struct Node, node)
-      return sum(node->l) + node->x + sum(node->r);
-  }
-#endif
 
   UNREACHABLE();
 }

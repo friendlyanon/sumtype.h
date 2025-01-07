@@ -54,47 +54,27 @@ int main(void)
 
   struct Haha something = Haha_name("hello");
 
-#ifdef Sumtype_typeinference
-  match_t(&something) {
-    let_t(name) {
+  match(something) {
+    let(name) {
       puts(*name);
     }
-    let_t(id) {
+    let(id) {
       printf("%d\n", *id);
     }
     otherwise {
       puts("var");
     }
   }
-#else
-  match(struct Haha, &something) {
-    let(char*, name) {
-      puts(*name);
-    }
-    let(uint16_t, id) {
-      printf("%d\n", *id);
-    }
-    otherwise {
-      puts("var");
-    }
-  }
-#endif
 
-  if (MATCHES(name, &something)) {
+  if (MATCHES(name, something)) {
     puts("matches!");
   }
 
   struct ManyVariants many = ManyVariants_var31("damn");
 
-#ifdef Sumtype_typeinference
-  iflet_t(var31, &many) {
+  iflet(var31, many) {
     puts(*var31);
   }
-#else
-  iflet(struct ManyVariants, char*, var31, &many) {
-    puts(*var31);
-  }
-#endif
 
   return 0;
 }

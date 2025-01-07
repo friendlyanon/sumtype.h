@@ -44,11 +44,18 @@
   ST_WHEN(ST_IS_PAREN(FIRST)) \
   (BODY(TY, FIRST) ST_OBSTRUCT(INDIRECT)()(TY, __VA_ARGS__))
 
-#define Sumtype_Tag(ty, name) SUMTYPE_TAG_##name
-#define Sumtype_Tag_Comma(ty, name) Sumtype_Tag(ty, name),
+#define Sumtype_Tag(name) SUMTYPE_TAG_##name
+#define Sumtype_Tag_Comma(ty, name) Sumtype_Tag(name),
 #define Sumtype_Tags(...) \
   ST_FOREACH(Sumtype_Tag_Comma, Sumtype_T_Indirect, __VA_ARGS__, )
 #define Sumtype_T_Indirect() Sumtype_Tags
+
+#define Sumtype_Typedef(A, args) \
+  typedef struct A ST_CAT(ST_IF_0 args, SumT); \
+  typedef ST_IF_1 args ST_CAT(ST_IF_0 args, Variant);
+#define Sumtype_Typedefs(A, ...) \
+  ST_FOREACH_TYPED(Sumtype_Typedef, Sumtype_D_Indirect, A, __VA_ARGS__, )
+#define Sumtype_D_Indirect() Sumtype_Typedefs
 
 #define Sumtype_Field(ty, name) ty name;
 #define Sumtype_Fields(...) \
@@ -86,24 +93,31 @@
 
 #ifdef __clang__
 #  define Sumtype_Diag_Push _Pragma("clang diagnostic push")
+#  define Sumtype_Diag_Cast_Qual \
+    _Pragma("clang diagnostic ignored \"-Wcast-qual\"")
+#  define Sumtype_Diag_Shadow _Pragma("clang diagnostic ignored \"-Wshadow\"")
 #  define Sumtype_Diag_Unused_Function \
     _Pragma("clang diagnostic ignored \"-Wunused-function\"")
 #  define Sumtype_Diag_Pop _Pragma("clang diagnostic pop")
 #else
 #  define Sumtype_Diag_Push
+#  define Sumtype_Diag_Cast_Qual
+#  define Sumtype_Diag_Shadow
 #  define Sumtype_Diag_Unused_Function
 #  define Sumtype_Diag_Pop
 #endif
 
 #define Sumtype_Constructor_Attributes \
-  Sumtype_Diag_Unused_Function Sumtype_Constructor_Warn_Unused_Result \
-      Sumtype_Constructor_Const Sumtype_always_inline
+  Sumtype_Diag_Unused_Function \
+  Sumtype_Constructor_Warn_Unused_Result Sumtype_Constructor_Const \
+      Sumtype_always_inline
 
 #define Sumtype_Constructor_Fields(ty, name) \
-  .tag = Sumtype_Tag(ty, name), .variant = {.name = name}
+  .tag = Sumtype_Tag(name), .variant = {.name = name}
 #define Sumtype_Decl(ty, name) ty name
 #define Sumtype_Constructor(A, args) \
-  Sumtype_Diag_Push Sumtype_Constructor_Attributes struct A ST_CAT( \
+  Sumtype_Diag_Push \
+  Sumtype_Constructor_Attributes struct A ST_CAT( \
       A, ST_CAT(_, ST_IF_0 args))(Sumtype_Decl args) \
   { \
     return (struct A) {Sumtype_Constructor_Fields args}; \
@@ -114,17 +128,16 @@
 #define Sumtype_C_Indirect() Sumtype_Constructors
 
 #define Sumtype_Impl(A, ...) \
+  enum A##Tags {Sumtype_Tags(__VA_ARGS__)}; \
   struct A \
   { \
-    enum \
-    { \
-      Sumtype_Tags(__VA_ARGS__) \
-    } tag; \
+    enum A##Tags tag; \
     union \
     { \
       Sumtype_Fields(__VA_ARGS__) \
     } variant; \
   }; \
+  Sumtype_Typedefs(A, __VA_ARGS__) \
   Sumtype_Constructors(A, __VA_ARGS__)
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
@@ -138,44 +151,47 @@
 #define Sumtype(A, ...) ST_EVAL(Sumtype_Impl(A, __VA_ARGS__, ))
 
 #define SumtypeLit(A, name, ...) \
-  ((struct A) {.tag = Sumtype_Tag(, name), .variant = {.name = __VA_ARGS__}})
+  ((struct A) {.tag = Sumtype_Tag(name), .variant = {.name = __VA_ARGS__}})
 
-#define match(ty, expr) \
-  for (ty* sumtype_priv_matched_val = (expr); \
-       sumtype_priv_matched_val != (ty*)0; \
-       sumtype_priv_matched_val = (ty*)0) \
-    switch (sumtype_priv_matched_val->tag)
+#define match(expr) \
+  Sumtype_Diag_Push \
+  Sumtype_Diag_Cast_Qual \
+  Sumtype_Diag_Shadow \
+  for (void* sumtype_priv_matched_val = (void*)&(expr); \
+       sumtype_priv_matched_val != 0; \
+       sumtype_priv_matched_val = 0) \
+    Sumtype_Diag_Pop \
+  switch ((expr).tag)
 
-#define let(ty, name) \
+#define let(name) \
   break; \
-  case Sumtype_Tag(ty, name): \
-    for (ty* name = &sumtype_priv_matched_val->variant.name; name != (ty*)0; \
-         name = (ty*)0)
-
-#ifdef Sumtype_typeof
-#  define Sumtype_typeinference
-#  define match_t(expr) match(Sumtype_typeof(*expr), expr)
-#  define let_t(name) \
-    let(Sumtype_typeof(sumtype_priv_matched_val->variant.name), name)
-#  define iflet_t(name, expr) \
-    iflet(Sumtype_typeof(*expr), \
-          Sumtype_typeof(sumtype_priv_matched_val->variant.name), \
-          name, \
-          expr)
-#endif
+  case Sumtype_Tag(name): \
+    Sumtype_Diag_Push \
+    Sumtype_Diag_Shadow \
+    for (name##Variant* name = \
+             &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
+         name != 0; \
+         name = 0) \
+      Sumtype_Diag_Pop
 
 #define otherwise \
   break; \
   default:
 
-#define iflet(mainty, ty, name, expr) \
-  for (mainty* sumtype_priv_matched_val = (expr); \
-       sumtype_priv_matched_val != (mainty*)0; \
-       sumtype_priv_matched_val = (mainty*)0) \
-    if (sumtype_priv_matched_val->tag == Sumtype_Tag(ty, name)) \
-      for (ty* name = &sumtype_priv_matched_val->variant.name; name != (ty*)0; \
-           name = (ty*)0)
+#define iflet(name, expr) \
+  Sumtype_Diag_Push \
+  Sumtype_Diag_Cast_Qual \
+  Sumtype_Diag_Shadow \
+  for (void* sumtype_priv_matched_val = (void*)&(expr); \
+       sumtype_priv_matched_val != 0; \
+       sumtype_priv_matched_val = 0) \
+    if ((expr).tag == Sumtype_Tag(name)) \
+      for (name##Variant* name = \
+               &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
+           name != 0; \
+           name = 0) \
+        Sumtype_Diag_Pop
 
-#define MATCHES(name, expr) ((expr)->tag == Sumtype_Tag(, name))
+#define MATCHES(name, expr) ((expr).tag == Sumtype_Tag(name))
 
 #endif  // SUMTYPE_H

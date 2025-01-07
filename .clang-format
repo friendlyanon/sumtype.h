@@ -176,6 +176,12 @@ StatementMacros:
   - Q_UNUSED
   - QT_REQUIRE_VERSION
   - Sumtype
+  - Sumtype_Typedefs
+  - Sumtype_Diag_Push
+  - Sumtype_Diag_Cast_Qual
+  - Sumtype_Diag_Shadow
+  - Sumtype_Diag_Unused_Function
+  - Sumtype_Diag_Pop
 TabWidth: 8
 UseCRLF: false
 UseTab: Never
