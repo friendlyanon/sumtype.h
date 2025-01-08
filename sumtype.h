@@ -144,12 +144,6 @@
   Sumtype_Constructors(A, __VA_ARGS__) \
   Sumtype_Diag_Pop
 
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-#  define Sumtype_typeof typeof
-#elif defined(Sumtype_GCC_or_Clang)
-#  define Sumtype_typeof __typeof__
-#endif
-
 #define Sumtype_let2(name, var) \
   break; \
   case Sumtype_Tag(name): \
