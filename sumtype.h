@@ -17,6 +17,10 @@
 #define ST_EXPAND(...) __VA_ARGS__
 #define ST_WHEN(c) ST_IF(c)(ST_EXPAND, ST_EAT)
 
+// Count preprocessor arguments
+#define ST_NARGS_IMPL(_1, _2, _3, N, ...) N
+#define ST_NARGS(...) ST_NARGS_IMPL(__VA_ARGS__, 3, 2, 1, ~)
+
 #define ST_CHECK_N(x, n, ...) n
 #define ST_CHECK(...) ST_CHECK_N(__VA_ARGS__, 0, )
 #define ST_PROBE(x) x, 1,
@@ -146,6 +150,40 @@
 #  define Sumtype_typeof __typeof__
 #endif
 
+#define Sumtype_let2(name, var) \
+  break; \
+  case Sumtype_Tag(name): \
+    Sumtype_Diag_Push \
+    Sumtype_Diag_Shadow \
+    for (name##Variant* var = \
+             &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
+         var != 0; \
+         var = 0) \
+      Sumtype_Diag_Pop
+
+#define Sumtype_let1(name) Sumtype_let2(name, name)
+
+#define Sumtype_let(...) ST_CAT(Sumtype_let, ST_NARGS(__VA_ARGS__))(__VA_ARGS__)
+
+#define Sumtype_iflet3(name, expr, var) \
+  Sumtype_Diag_Push \
+  Sumtype_Diag_Cast_Qual \
+  Sumtype_Diag_Shadow \
+  for (void* sumtype_priv_matched_val = (void*)&(expr); \
+       sumtype_priv_matched_val != 0; \
+       sumtype_priv_matched_val = 0) \
+    if ((expr).tag == Sumtype_Tag(name)) \
+      for (name##Variant* var = \
+               &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
+           var != 0; \
+           var = 0) \
+        Sumtype_Diag_Pop
+
+#define Sumtype_iflet2(name, expr) Sumtype_iflet3(name, expr, name)
+
+#define Sumtype_iflet(...) \
+  ST_CAT(Sumtype_iflet, ST_NARGS(__VA_ARGS__))(__VA_ARGS__)
+
 // Public API:
 
 #define Sumtype(A, ...) ST_EVAL(Sumtype_Impl(A, __VA_ARGS__, ))
@@ -163,34 +201,13 @@
     Sumtype_Diag_Pop \
   switch ((expr).tag)
 
-#define let(name) \
-  break; \
-  case Sumtype_Tag(name): \
-    Sumtype_Diag_Push \
-    Sumtype_Diag_Shadow \
-    for (name##Variant* name = \
-             &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
-         name != 0; \
-         name = 0) \
-      Sumtype_Diag_Pop
+#define let(/* name, */...) Sumtype_let(__VA_ARGS__)
 
 #define otherwise \
   break; \
   default:
 
-#define iflet(name, expr) \
-  Sumtype_Diag_Push \
-  Sumtype_Diag_Cast_Qual \
-  Sumtype_Diag_Shadow \
-  for (void* sumtype_priv_matched_val = (void*)&(expr); \
-       sumtype_priv_matched_val != 0; \
-       sumtype_priv_matched_val = 0) \
-    if ((expr).tag == Sumtype_Tag(name)) \
-      for (name##Variant* name = \
-               &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
-           name != 0; \
-           name = 0) \
-        Sumtype_Diag_Pop
+#define iflet(name, /* expr, */...) Sumtype_iflet(name, __VA_ARGS__)
 
 #define MATCHES(name, expr) ((expr).tag == Sumtype_Tag(name))
 

@@ -15,8 +15,8 @@ _Noreturn inline void unreachable_impl(void) {}
 int sum(struct BinaryTree* tree)
 {
   match(*tree) {
-    let(leaf)
-      return *leaf;
+    let(leaf, l)
+      return *l;
     let(node)
       return sum(node->l) + node->x + sum(node->r);
   }

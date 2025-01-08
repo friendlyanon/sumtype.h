@@ -72,8 +72,8 @@ int main(void)
 
   struct ManyVariants many = ManyVariants_var31("damn");
 
-  iflet(var31, many) {
-    puts(*var31);
+  iflet(var31, many, string) {
+    puts(*string);
   }
 
   return 0;
