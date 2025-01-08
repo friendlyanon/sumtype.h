@@ -72,6 +72,12 @@ int main(void)
 
   struct ManyVariants many = ManyVariants_var31("damn");
 
+  iflet(var11, many)
+    puts("Never reached");
+  else {
+    puts("else");
+  }
+
   iflet(var31, many, string) {
     puts(*string);
   }
