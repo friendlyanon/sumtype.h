@@ -74,9 +74,8 @@ int main(void)
 
   iflet(var11, many)
     puts("Never reached");
-  else {
+  else
     puts("else");
-  }
 
   iflet(var31, many, string) {
     puts(*string);

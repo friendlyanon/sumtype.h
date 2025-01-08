@@ -72,11 +72,9 @@ ForEachMacros:
   - BOOST_FOREACH
   - otherwise
   - let
-  - iflet
   - match
-  - let_t
-  - iflet_t
-  - match_t
+IfMacros:
+  - iflet
 IncludeBlocks: Regroup
 IncludeCategories:
   # Standard library headers come before anything else
