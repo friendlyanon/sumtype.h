@@ -175,6 +175,7 @@ StatementMacros:
   - QT_REQUIRE_VERSION
   - Sumtype
   - Sumtype_Constructors
+  - Sumtype_Constructor_Attributes
   - Sumtype_Typedefs
   - Sumtype_Diag_Push
   - Sumtype_Diag_Cast_Qual
