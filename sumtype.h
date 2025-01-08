@@ -112,7 +112,6 @@
 #endif
 
 #define Sumtype_Constructor_Attributes \
-  Sumtype_Diag_Unused_Function \
   Sumtype_Constructor_Warn_Unused_Result Sumtype_Constructor_Const \
       Sumtype_always_inline
 
@@ -120,13 +119,11 @@
   .tag = Sumtype_Tag(name), .variant = {.name = name}
 #define Sumtype_Decl(ty, name) ty name
 #define Sumtype_Constructor(A, args) \
-  Sumtype_Diag_Push \
   Sumtype_Constructor_Attributes struct A ST_CAT( \
       A, ST_CAT(_, ST_IF_0 args))(Sumtype_Decl args) \
   { \
     return (struct A) {Sumtype_Constructor_Fields args}; \
-  } \
-  Sumtype_Diag_Pop
+  }
 #define Sumtype_Constructors(A, ...) \
   ST_FOREACH_TYPED(Sumtype_Constructor, Sumtype_C_Indirect, A, __VA_ARGS__, )
 #define Sumtype_C_Indirect() Sumtype_Constructors
@@ -142,7 +139,10 @@
     } variant; \
   }; \
   Sumtype_Typedefs(A, __VA_ARGS__) \
-  Sumtype_Constructors(A, __VA_ARGS__)
+  Sumtype_Diag_Push \
+  Sumtype_Diag_Unused_Function \
+  Sumtype_Constructors(A, __VA_ARGS__) \
+  Sumtype_Diag_Pop
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
 #  define Sumtype_typeof typeof
