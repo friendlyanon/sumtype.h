@@ -55,8 +55,8 @@ int main(void)
   struct Haha something = Haha_name("hello");
 
   match(something) {
-    let(name) {
-      puts(*name);
+    let((const, name), string) {
+      puts(*string);
     }
     let(id) {
       printf("%d\n", *id);
@@ -77,7 +77,7 @@ int main(void)
   else
     puts("else");
 
-  iflet(var31, many, string) {
+  iflet((const, var31), many, string) {
     puts(*string);
   }
 

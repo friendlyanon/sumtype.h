@@ -12,12 +12,12 @@ _Noreturn inline void unreachable_impl(void) {}
 #  define UNREACHABLE() (unreachable_impl())
 #endif
 
-int sum(struct BinaryTree* tree)
+int sum(struct BinaryTree const* tree)
 {
   match(*tree) {
-    let(leaf, l)
+    let((const, leaf), l)
       return *l;
-    let(node)
+    let((const, node))
       return sum(node->l) + node->x + sum(node->r);
   }
 

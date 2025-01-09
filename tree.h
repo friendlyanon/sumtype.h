@@ -18,6 +18,6 @@ Sumtype(
 )
 // clang-format on
 
-int sum(struct BinaryTree* tree);
+int sum(struct BinaryTree const* tree);
 
 #endif  // TREE_H

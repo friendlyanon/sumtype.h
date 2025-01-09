@@ -48,7 +48,7 @@
   ST_WHEN(ST_IS_PAREN(FIRST)) \
   (BODY(TY, FIRST) ST_OBSTRUCT(INDIRECT)()(TY, __VA_ARGS__))
 
-#define Sumtype_Tag(name) SUMTYPE_TAG_##name
+#define Sumtype_Tag(name) ST_CAT(SUMTYPE_TAG_, name)
 #define Sumtype_Tag_Comma(ty, name) Sumtype_Tag(name),
 #define Sumtype_Tags(...) \
   ST_FOREACH(Sumtype_Tag_Comma, Sumtype_T_Indirect, __VA_ARGS__, )
@@ -144,18 +144,38 @@
   Sumtype_Constructors(A, __VA_ARGS__) \
   Sumtype_Diag_Pop
 
+#define Sumtype_let_tp(args) Sumtype_Tag(ST_IF_0 args)
+#define Sumtype_let_tt(name) Sumtype_Tag(name)
+
+#define Sumtype_let_vp(args) ST_CAT(ST_IF_0 args, Variant) ST_IF_1 args
+#define Sumtype_let_vt(name) name##Variant
+
+#define Sumtype_let_sp(args) ST_CAT(ST_IF_0 args, SumT) ST_IF_1 args
+#define Sumtype_let_st(name) name##SumT
+
+#define Sumtype_let_ip(args) ST_IF_0 args
+#define Sumtype_let_it(name) name
+
+#define Sumtype_let_c(name, c) \
+  ST_IF(ST_IS_PAREN(name))(Sumtype_let_##c##p, Sumtype_let_##c##t)
+
 #define Sumtype_let2(name, var) \
   break; \
-  case Sumtype_Tag(name): \
+  case Sumtype_let_c(name, t)(name): \
     Sumtype_Diag_Push \
     Sumtype_Diag_Shadow \
-    for (name##Variant* var = \
-             &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
+    for (Sumtype_let_c(name, v)(name)* var = \
+             &((Sumtype_let_c(name, s)(name)*)sumtype_priv_matched_val) \
+                  ->variant.Sumtype_let_c(name, i)(name); \
          var != 0; \
          var = 0) \
       Sumtype_Diag_Pop
 
-#define Sumtype_let1(name) Sumtype_let2(name, name)
+#define Sumtype_let_p(args) Sumtype_let2(args, ST_IF_0 args)
+#define Sumtype_let_t(name) Sumtype_let2(name, name)
+
+#define Sumtype_let1(name) \
+  ST_IF(ST_IS_PAREN(name))(Sumtype_let_p, Sumtype_let_t)(name)
 
 #define Sumtype_let(...) ST_CAT(Sumtype_let, ST_NARGS(__VA_ARGS__))(__VA_ARGS__)
 
@@ -166,14 +186,19 @@
   for (void* sumtype_priv_matched_val = (void*)&(expr); \
        sumtype_priv_matched_val != 0; \
        sumtype_priv_matched_val = 0) \
-    if ((expr).tag == Sumtype_Tag(name)) \
-      for (name##Variant* var = \
-               &((name##SumT*)sumtype_priv_matched_val)->variant.name; \
+    if ((expr).tag == Sumtype_let_c(name, t)(name)) \
+      for (Sumtype_let_c(name, v)(name)* var = \
+               &((Sumtype_let_c(name, s)(name)*)sumtype_priv_matched_val) \
+                    ->variant.Sumtype_let_c(name, i)(name); \
            var != 0; \
            var = 0) \
         Sumtype_Diag_Pop
 
-#define Sumtype_iflet2(name, expr) Sumtype_iflet3(name, expr, name)
+#define Sumtype_iflet_p(args, expr) Sumtype_iflet3(args, expr, ST_IF_0 args)
+#define Sumtype_iflet_t(name, expr) Sumtype_iflet3(name, expr, name)
+
+#define Sumtype_iflet2(name, expr) \
+  ST_IF(ST_IS_PAREN(name))(Sumtype_iflet_p, Sumtype_iflet_t)(name, expr)
 
 #define Sumtype_iflet(...) \
   ST_CAT(Sumtype_iflet, ST_NARGS(__VA_ARGS__))(__VA_ARGS__)
@@ -195,12 +220,14 @@
     Sumtype_Diag_Pop \
   switch ((expr).tag)
 
-#define let(/* name, */...) Sumtype_let(__VA_ARGS__)
-
 #define otherwise \
   break; \
   default:
 
+// "name" may be an identifier or a tuple of (cv-qualifier, identifier)
+#define let(/* name, */...) Sumtype_let(__VA_ARGS__)
+
+// "name" may be an identifier or a tuple of (cv-qualifier, identifier)
 #define iflet(name, /* expr, */...) Sumtype_iflet(name, __VA_ARGS__)
 
 #define MATCHES(name, expr) ((expr).tag == Sumtype_Tag(name))
