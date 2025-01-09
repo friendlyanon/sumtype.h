@@ -144,6 +144,15 @@
   Sumtype_Constructors(A, __VA_ARGS__) \
   Sumtype_Diag_Pop
 
+#define Sumtype_var_np(args) ST_IF_0 args
+#define Sumtype_var_nt(var) var
+
+#define Sumtype_var_ep(args) ST_IF_1 args ST_IF_0 args
+#define Sumtype_var_et(var) var
+
+#define Sumtype_var_c(var, c) \
+  ST_IF(ST_IS_PAREN(var))(Sumtype_var_##c##p, Sumtype_var_##c##t)(var)
+
 #define Sumtype_let_tp(args) Sumtype_Tag(ST_IF_0 args)
 #define Sumtype_let_tt(name) Sumtype_Tag(name)
 
@@ -157,19 +166,18 @@
 #define Sumtype_let_it(name) name
 
 #define Sumtype_let_c(name, c) \
-  ST_IF(ST_IS_PAREN(name))(Sumtype_let_##c##p, Sumtype_let_##c##t)
+  ST_IF(ST_IS_PAREN(name))(Sumtype_let_##c##p, Sumtype_let_##c##t)(name)
 
 #define Sumtype_let2(name, var) \
   break; \
-  case Sumtype_let_c(name, t)(name): \
+  case Sumtype_let_c(name, t): \
     Sumtype_Diag_Push \
     Sumtype_Diag_Shadow \
-    for (Sumtype_let_c(name, v)(name)* restrict var = \
-             &((Sumtype_let_c(name, \
-                              s)(name)* restrict)sumtype_priv_matched_val) \
-                  ->variant.Sumtype_let_c(name, i)(name); \
-         var != 0; \
-         var = 0) \
+    for (Sumtype_let_c(name, v) * SUMTYPE_RESTRICT Sumtype_var_c(var, e) = \
+             &((Sumtype_let_c(name, s)* restrict)sumtype_priv_matched_val) \
+                  ->variant.Sumtype_let_c(name, i); \
+         Sumtype_var_c(var, n) != 0; \
+         Sumtype_var_c(var, n) = 0) \
       Sumtype_Diag_Pop
 
 #define Sumtype_let_p(args) Sumtype_let2(args, ST_IF_0 args)
@@ -187,13 +195,12 @@
   for (void* restrict sumtype_priv_matched_val = (void* restrict)&(expr); \
        sumtype_priv_matched_val != 0; \
        sumtype_priv_matched_val = 0) \
-    if ((expr).tag == Sumtype_let_c(name, t)(name)) \
-      for (Sumtype_let_c(name, v)(name)* restrict var = \
-               &((Sumtype_let_c(name, \
-                                s)(name)* restrict)sumtype_priv_matched_val) \
-                    ->variant.Sumtype_let_c(name, i)(name); \
-           var != 0; \
-           var = 0) \
+    if ((expr).tag == Sumtype_let_c(name, t)) \
+      for (Sumtype_let_c(name, v) * SUMTYPE_RESTRICT Sumtype_var_c(var, e) = \
+               &((Sumtype_let_c(name, s)* restrict)sumtype_priv_matched_val) \
+                    ->variant.Sumtype_let_c(name, i); \
+           Sumtype_var_c(var, n) != 0; \
+           Sumtype_var_c(var, n) = 0) \
         Sumtype_Diag_Pop
 
 #define Sumtype_iflet_p(args, expr) Sumtype_iflet3(args, expr, ST_IF_0 args)
@@ -206,6 +213,14 @@
   ST_CAT(Sumtype_iflet, ST_NARGS(__VA_ARGS__))(__VA_ARGS__)
 
 // Public API:
+
+// If not already defined, then make the variables matched by `let` and `iflet`
+// restricted by default. If defined to be empty, the 2nd and 3rd arguments
+// respectively can be be used to also pass the keyword with the name of the
+// variable as a tuple like (restrict, identifier).
+#ifndef SUMTYPE_RESTRICT
+#  define SUMTYPE_RESTRICT restrict
+#endif
 
 #define Sumtype(A, ...) ST_EVAL(Sumtype_Impl(A, __VA_ARGS__, ))
 
