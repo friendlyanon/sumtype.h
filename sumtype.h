@@ -164,8 +164,9 @@
   case Sumtype_let_c(name, t)(name): \
     Sumtype_Diag_Push \
     Sumtype_Diag_Shadow \
-    for (Sumtype_let_c(name, v)(name)* var = \
-             &((Sumtype_let_c(name, s)(name)*)sumtype_priv_matched_val) \
+    for (Sumtype_let_c(name, v)(name)* restrict var = \
+             &((Sumtype_let_c(name, \
+                              s)(name)* restrict)sumtype_priv_matched_val) \
                   ->variant.Sumtype_let_c(name, i)(name); \
          var != 0; \
          var = 0) \
@@ -183,12 +184,13 @@
   Sumtype_Diag_Push \
   Sumtype_Diag_Cast_Qual \
   Sumtype_Diag_Shadow \
-  for (void* sumtype_priv_matched_val = (void*)&(expr); \
+  for (void* restrict sumtype_priv_matched_val = (void* restrict)&(expr); \
        sumtype_priv_matched_val != 0; \
        sumtype_priv_matched_val = 0) \
     if ((expr).tag == Sumtype_let_c(name, t)(name)) \
-      for (Sumtype_let_c(name, v)(name)* var = \
-               &((Sumtype_let_c(name, s)(name)*)sumtype_priv_matched_val) \
+      for (Sumtype_let_c(name, v)(name)* restrict var = \
+               &((Sumtype_let_c(name, \
+                                s)(name)* restrict)sumtype_priv_matched_val) \
                     ->variant.Sumtype_let_c(name, i)(name); \
            var != 0; \
            var = 0) \
@@ -214,7 +216,7 @@
   Sumtype_Diag_Push \
   Sumtype_Diag_Cast_Qual \
   Sumtype_Diag_Shadow \
-  for (void* sumtype_priv_matched_val = (void*)&(expr); \
+  for (void* restrict sumtype_priv_matched_val = (void* restrict)&(expr); \
        sumtype_priv_matched_val != 0; \
        sumtype_priv_matched_val = 0) \
     Sumtype_Diag_Pop \
