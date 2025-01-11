@@ -4,43 +4,43 @@
 #include "sumtype.h"
 #include "tree.h"
 
-Sumtype(Haha, (char*, name), (uint16_t, id), (uint32_t, var))
+Sumtype(Haha, (char const*, name), (uint16_t, id), (uint32_t, var))
 
 // clang-format off
 Sumtype(
   ManyVariants,
-  (char*, var0),
-  (char*, var1),
-  (char*, var2),
-  (char*, var3),
-  (char*, var4),
-  (char*, var5),
-  (char*, var6),
-  (char*, var7),
-  (char*, var8),
-  (char*, var9),
-  (char*, var10),
-  (char*, var11),
-  (char*, var12),
-  (char*, var13),
-  (char*, var14),
-  (char*, var15),
-  (char*, var16),
-  (char*, var17),
-  (char*, var18),
-  (char*, var19),
-  (char*, var20),
-  (char*, var21),
-  (char*, var22),
-  (char*, var23),
-  (char*, var24),
-  (char*, var25),
-  (char*, var26),
-  (char*, var27),
-  (char*, var28),
-  (char*, var29),
-  (char*, var30),
-  (char*, var31),
+  (char const*, var0),
+  (char const*, var1),
+  (char const*, var2),
+  (char const*, var3),
+  (char const*, var4),
+  (char const*, var5),
+  (char const*, var6),
+  (char const*, var7),
+  (char const*, var8),
+  (char const*, var9),
+  (char const*, var10),
+  (char const*, var11),
+  (char const*, var12),
+  (char const*, var13),
+  (char const*, var14),
+  (char const*, var15),
+  (char const*, var16),
+  (char const*, var17),
+  (char const*, var18),
+  (char const*, var19),
+  (char const*, var20),
+  (char const*, var21),
+  (char const*, var22),
+  (char const*, var23),
+  (char const*, var24),
+  (char const*, var25),
+  (char const*, var26),
+  (char const*, var27),
+  (char const*, var28),
+  (char const*, var29),
+  (char const*, var30),
+  (char const*, var31),
 )
 // clang-format on
 
@@ -56,7 +56,8 @@ int main(void)
 
   match(something) {
     let((const, name), string) {
-      puts(*string);
+      iflet((const, name), something, str)
+        puts(*str);
     }
     let(id) {
       printf("%d\n", *id);

@@ -103,6 +103,13 @@
 #  define Sumtype_Diag_Unused_Function \
     _Pragma("clang diagnostic ignored \"-Wunused-function\"")
 #  define Sumtype_Diag_Pop _Pragma("clang diagnostic pop")
+#elif defined(__GNUC__)
+#  define Sumtype_Diag_Push _Pragma("GCC diagnostic push")
+#  define Sumtype_Diag_Cast_Qual \
+    _Pragma("GCC diagnostic ignored \"-Wcast-qual\"")
+#  define Sumtype_Diag_Shadow _Pragma("GCC diagnostic ignored \"-Wshadow\"")
+#  define Sumtype_Diag_Unused_Function
+#  define Sumtype_Diag_Pop _Pragma("GCC diagnostic pop")
 #else
 #  define Sumtype_Diag_Push
 #  define Sumtype_Diag_Cast_Qual
@@ -192,7 +199,7 @@
   Sumtype_Diag_Push \
   Sumtype_Diag_Cast_Qual \
   Sumtype_Diag_Shadow \
-  for (void* restrict sumtype_priv_matched_val = (void* restrict)&(expr); \
+  for (void* restrict sumtype_priv_matched_val = (void*)&(expr); \
        sumtype_priv_matched_val != 0; \
        sumtype_priv_matched_val = 0) \
     if ((expr).tag == Sumtype_let_c(name, t)) \
@@ -214,6 +221,9 @@
 
 // Public API:
 
+// -Werror=enum-compare and -Werror=switch are heavily recommended flags to
+// reduce chances of type confusion
+
 // If not already defined, then make the variables matched by `let` and `iflet`
 // restricted by default. If defined to be empty, the 2nd and 3rd arguments
 // respectively can be be used to also pass the keyword with the name of the
@@ -231,7 +241,7 @@
   Sumtype_Diag_Push \
   Sumtype_Diag_Cast_Qual \
   Sumtype_Diag_Shadow \
-  for (void* restrict sumtype_priv_matched_val = (void* restrict)&(expr); \
+  for (void* restrict sumtype_priv_matched_val = (void*)&(expr); \
        sumtype_priv_matched_val != 0; \
        sumtype_priv_matched_val = 0) \
     Sumtype_Diag_Pop \
